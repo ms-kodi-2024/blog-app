@@ -28,7 +28,7 @@ const Post = () => {
             <br/>
             <strong>Published: </strong>{post.publishedDate}
           </p>
-          {post.content}
+          <p dangerouslySetInnerHTML={{ __html: post.content }} />
         </Col>
         <Col md={{ span: 3, offset: 3 }}>
           <Link to={`/post/edit/${post.id}`} className="btn btn-outline-primary me-3">Edit</Link>

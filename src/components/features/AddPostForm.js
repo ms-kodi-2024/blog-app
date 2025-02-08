@@ -3,16 +3,22 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addPost } from "../../redux/postRedux";
 import { Form, Button } from "react-bootstrap";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import formatDate from '../../utils/dateToStr';
 
 const AddPostForm = () => {
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [content, setContent] = useState("");
-  const [publishedDate, setPublishedDate] = useState("");
   const [author, setAuthor] = useState("");
+  const [startDate, setStartDate] = useState(new Date());
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -20,7 +26,7 @@ const AddPostForm = () => {
       title,
       shortDescription,
       content,
-      publishedDate,
+      publishedDate: formatDate(startDate),
       author
     };
     dispatch(addPost(newPost));
@@ -40,8 +46,8 @@ const AddPostForm = () => {
       </Form.Group>
 
       <Form.Group className="mb-3">
-        <Form.Label htmlFor="published">Published Date</Form.Label>
-        <Form.Control id="published" type="text" placeholder="Enter published" value={publishedDate} onChange={(e) => setPublishedDate(e.target.value)} required />
+        <Form.Label htmlFor="published">Published Date</Form.Label><br />
+        <DatePicker id="published" selected={startDate} onChange={(date) => setStartDate(date)} dateFormat="dd-MM-yyyy" required />
       </Form.Group>
 
       <Form.Group className="mb-3">
@@ -51,7 +57,7 @@ const AddPostForm = () => {
 
       <Form.Group className="mb-3">
         <Form.Label htmlFor="mainContent">Content</Form.Label>
-        <Form.Control as="textarea" id="mainContent" rows={4} value={content} placeholder="Leave a comment here" onChange={(e) => setContent(e.target.value)} required />
+        <ReactQuill id="mainContent" theme="snow" value={content} onChange={setContent} required />
       </Form.Group>
 
       <Button variant="primary" type="submit">Add Post</Button>

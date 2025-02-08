@@ -4,6 +4,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { editPost } from "../../redux/postRedux";
 import { Form, Button } from "react-bootstrap";
 import { selectPostById } from "../../redux/postRedux";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import formatDate from '../../utils/dateToStr';
 
 const EditPostForm = () => {
   const { id } = useParams();
@@ -14,22 +19,22 @@ const EditPostForm = () => {
   const [title, setTitle] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [content, setContent] = useState("");
-  const [publishedDate, setPublishedDate] = useState("");
   const [author, setAuthor] = useState("");
+  const [startDate, setStartDate] = useState(new Date());
 
   useEffect(() => {
     if (post) {
       setTitle(post.title);
       setShortDescription(post.shortDescription);
       setContent(post.content);
-      setPublishedDate(post.publishedDate);
+      setStartDate(post.publishedDate);
       setAuthor(post.author);
     }
 	}, [post]);
 	
   const handleSubmit = (e) => {
     e.preventDefault();
-    const updatedPost = { id, title, shortDescription, content, publishedDate, author};
+    const updatedPost = { id, title, shortDescription, content, publishedDate: formatDate(startDate), author};
     dispatch(editPost(updatedPost));
     navigate("/");
   };
@@ -48,9 +53,8 @@ const EditPostForm = () => {
       </Form.Group>
 
       <Form.Group className="mb-3">
-        <Form.Label htmlFor="publishedDate">Published Date</Form.Label>
-        <Form.Control id="publishedDate" type="text" placeholder="Enter published" value={publishedDate}
-          onChange={(e) => setPublishedDate(e.target.value)} required />
+        <Form.Label htmlFor="publishedDate">Published Date</Form.Label><br />
+        <DatePicker id="publishedDate" selected={startDate} onChange={(date) => setStartDate(date)} dateFormat="dd-MM-yyyy" required />
       </Form.Group>
 
       <Form.Group className="mb-3">
@@ -61,7 +65,7 @@ const EditPostForm = () => {
 
       <Form.Group className="mb-3">
         <Form.Label htmlFor="content">Content</Form.Label>
-        <Form.Control id="content" as="textarea" rows={4} value={content} placeholder="Leave a comment here" onChange={(e) => setContent(e.target.value)} required />
+        <ReactQuill id="mainContent" theme="snow" value={content} onChange={setContent} />
       </Form.Group>
 
       <Button variant="primary" type="submit">Update Post</Button>

@@ -13,7 +13,7 @@ const EDIT_POST = createActionName("EDIT_POST");
 
 // action creators
 export const deletePost = payload => ({ type: DELETE_POST, payload });
-export const addPost = (post) => ({ type: ADD_POST, payload: post });
+export const addPost = (post) => ({ type: ADD_POST, payload: { ...post, content: post.content }});
 export const editPost = (updatedPost) => ({ type: EDIT_POST, payload: updatedPost });
 
 const postsReducer = (statePart = [], action) => {
