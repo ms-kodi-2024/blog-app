@@ -1,5 +1,5 @@
 import { Container, Row, Col } from "react-bootstrap";
-import EditPostForm from "../features/EditPostForm";
+import PostForm from "../features/PostForm";
 
 const EditPost = () => {
   
@@ -8,7 +8,7 @@ const EditPost = () => {
       <Row>
         <Col md={{ span: 8, offset: 2 }}>
           <h1 className="mb-4">Edit Post</h1>
-          <EditPostForm />
+          <PostForm />
         </Col>
       </Row>
     </Container>

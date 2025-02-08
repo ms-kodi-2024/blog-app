@@ -1,16 +1,18 @@
-import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { addPost } from "../../redux/postRedux";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams, useNavigate } from "react-router-dom";
+import { addPost, editPost } from "../../redux/postRedux";
 import { Form, Button } from "react-bootstrap";
+import { selectPostById } from "../../redux/postRedux";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import formatDate from '../../utils/dateToStr';
 
-const AddPostForm = () => {
-
+const PostForm = () => {
+  const { id } = useParams();
+  const post = useSelector((state) => selectPostById(state, id));
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -20,16 +22,33 @@ const AddPostForm = () => {
   const [author, setAuthor] = useState("");
   const [startDate, setStartDate] = useState(new Date());
 
+  useEffect(() => {
+    if (post) {
+      setTitle(post.title);
+      setShortDescription(post.shortDescription);
+      setContent(post.content);
+      setStartDate(new Date(post.publishedDate));
+      setAuthor(post.author);
+    }
+  }, [post]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newPost = {
+    const postData = {
       title,
       shortDescription,
       content,
       publishedDate: formatDate(startDate),
       author
     };
-    dispatch(addPost(newPost));
+
+    if (id) {
+      const updatedPost = { id, ...postData };
+      dispatch(editPost(updatedPost));
+    } else {
+      dispatch(addPost(postData));
+    }
+
     navigate("/");
   };
 
@@ -46,23 +65,26 @@ const AddPostForm = () => {
       </Form.Group>
 
       <Form.Group className="mb-3">
-        <Form.Label htmlFor="published">Published Date</Form.Label><br />
-        <DatePicker id="published" selected={startDate} onChange={(date) => setStartDate(date)} dateFormat="dd-MM-yyyy" required />
+        <Form.Label htmlFor="publishedDate">Published Date</Form.Label><br />
+        <DatePicker id="publishedDate" selected={startDate} onChange={(date) => setStartDate(date)} dateFormat="dd-MM-yyyy" required />
       </Form.Group>
 
       <Form.Group className="mb-3">
         <Form.Label htmlFor="shortDescription">Short Description</Form.Label>
-        <Form.Control id="shortDescription" type="text" placeholder="Leave a comment here" value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} required />
+        <Form.Control id="shortDescription" type="text" placeholder="Leave a comment here" value={shortDescription}
+          onChange={(e) => setShortDescription(e.target.value)} required />
       </Form.Group>
 
       <Form.Group className="mb-3">
-        <Form.Label htmlFor="mainContent">Content</Form.Label>
+        <Form.Label htmlFor="content">Content</Form.Label>
         <ReactQuill id="mainContent" theme="snow" value={content} onChange={setContent} required />
       </Form.Group>
 
-      <Button variant="primary" type="submit">Add Post</Button>
+      <Button variant="primary" type="submit">
+        {id ? "Update Post" : "Add Post"}
+      </Button>
     </Form>
   );
 };
 
-export default AddPostForm;
+export default PostForm;
