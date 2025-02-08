@@ -9,6 +9,7 @@ import 'react-quill/dist/quill.snow.css';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import formatDate from '../../utils/dateToStr';
+import { useForm } from "react-hook-form";
 
 const PostForm = () => {
   const { id } = useParams();
@@ -16,30 +17,38 @@ const PostForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [title, setTitle] = useState("");
-  const [shortDescription, setShortDescription] = useState("");
-  const [content, setContent] = useState("");
-  const [author, setAuthor] = useState("");
-  const [startDate, setStartDate] = useState(new Date());
+	const [contentError, setContentError] = useState(false);
+  const [dateError, setDateError] = useState(false);
+
+	const { register, handleSubmit: validate, setValue, watch, formState: { errors } } = useForm({
+		defaultValues: {
+			publishedDate: new Date(),
+		}
+	});
 
   useEffect(() => {
     if (post) {
-      setTitle(post.title);
-      setShortDescription(post.shortDescription);
-      setContent(post.content);
-      setStartDate(new Date(post.publishedDate));
-      setAuthor(post.author);
+			setValue("title", post.title);
+      setValue("shortDescription", post.shortDescription);
+      setValue("content", post.content);
+      setValue("author", post.author);
+      setValue("publishedDate", new Date(post.publishedDate));
     }
-  }, [post]);
+  }, [post, setValue]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+	const handleSubmit = (data) => {
+
+		setContentError(!data.content);
+    setDateError(!data.publishedDate);
+
+    if (!data.content || !data.publishedDate) return;
+
     const postData = {
-      title,
-      shortDescription,
-      content,
-      publishedDate: formatDate(startDate),
-      author
+      title: data.title,
+      shortDescription: data.shortDescription,
+      content: data.content,
+      publishedDate: data.publishedDate ? formatDate(data.publishedDate) : null,
+      author: data.author
     };
 
     if (id) {
@@ -50,38 +59,80 @@ const PostForm = () => {
     }
 
     navigate("/");
-  };
+	};
+	
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <Form.Group className="mb-3">
-        <Form.Label htmlFor="title">Title</Form.Label>
-        <Form.Control id="title" type="text" placeholder="Enter title" value={title} onChange={(e) => setTitle(e.target.value)} required />
-      </Form.Group>
+		<Form onSubmit={validate(handleSubmit)}>
+
+			<Form.Group className="mb-3" controlId="formBasicEmail">
+				<Form.Label htmlFor="title">Title</Form.Label>
+				<Form.Control
+					{...register("title", {
+						required: "Title is required", 
+    				minLength: { value: 3, message: "Title must be at least 3 characters long" }
+					})}
+					id="title"
+					type="text"
+					placeholder="Enter title"
+				/>
+				{errors.title && <small className="d-block form-text text-danger mt-2">{errors.title.message}</small>}
+			</Form.Group>
 
       <Form.Group className="mb-3">
         <Form.Label htmlFor="author">Author</Form.Label>
-        <Form.Control id="author" type="text" placeholder="Enter author" value={author} onChange={(e) => setAuthor(e.target.value)} required />
+				<Form.Control
+					{...register("author", {
+						required: "Author is required", 
+    				minLength: { value: 3, message: "Author must be at least 3 characters long" }
+					})}
+					id="author"
+					type="text"
+					placeholder="Enter author"
+				/>
+				{errors.author && <small className="d-block form-text text-danger mt-2">{errors.author.message}</small>}
       </Form.Group>
 
       <Form.Group className="mb-3">
         <Form.Label htmlFor="publishedDate">Published Date</Form.Label><br />
-        <DatePicker id="publishedDate" selected={startDate} onChange={(date) => setStartDate(date)} dateFormat="dd-MM-yyyy" required />
+				<DatePicker
+					id="publishedDate"
+					selected={watch("publishedDate")} 
+					onChange={(date) => setValue("publishedDate", date)} 
+					placeholderText="Select a date"
+					dateFormat="dd-MM-yyyy"
+				/>
+				{dateError && <small className="d-block form-text text-danger mt-2">Published date is required</small>}
       </Form.Group>
 
       <Form.Group className="mb-3">
         <Form.Label htmlFor="shortDescription">Short Description</Form.Label>
-        <Form.Control id="shortDescription" type="text" placeholder="Leave a comment here" value={shortDescription}
-          onChange={(e) => setShortDescription(e.target.value)} required />
+				<Form.Control
+					{...register("shortDescription", {
+						required: "Short description is required", 
+    				minLength: { value: 20, message: "Short description must be at least 20 characters long" }
+					})}
+					id="shortDescription"
+					onChange={e => setValue(e.target.value)}
+					type="text"
+					placeholder="Enter short description"
+				/>
+				{errors.shortDescription && <small className="d-block form-text text-danger mt-2">{errors.shortDescription.message}</small>}
       </Form.Group>
 
       <Form.Group className="mb-3">
         <Form.Label htmlFor="content">Content</Form.Label>
-        <ReactQuill id="mainContent" theme="snow" value={content} onChange={setContent} required />
+				<ReactQuill
+					id="mainContent"
+					theme="snow"
+					value={watch("content")} 
+					onChange={(value) => setValue("content", value, { shouldValidate: true })} 
+				/>
+        {contentError && <small className="d-block form-text text-danger mt-2">Content is required</small>}
       </Form.Group>
 
       <Button variant="primary" type="submit">
-        {id ? "Update Post" : "Add Post"}
+        {id ? "Update post" : "Add post"}
       </Button>
     </Form>
   );
