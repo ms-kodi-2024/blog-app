@@ -24,6 +24,8 @@ const Home = () => {
                     <strong>Author: </strong>{post.author}
                     <br/>
                     <strong>Published: </strong>{post.publishedDate}
+                    <br/>
+                    <strong>Category: </strong>{post.category}
                   </p>
                   <Card.Text>{post.shortDescription}</Card.Text>
                   <Link to={`/post/${post.id}`} className="btn btn-primary">Read more</Link>

@@ -27,6 +27,8 @@ const Post = () => {
             <strong>Author: </strong>{post.author}
             <br/>
             <strong>Published: </strong>{post.publishedDate}
+            <br/>
+            <strong>Category: </strong>{post.category}
           </p>
           <p dangerouslySetInnerHTML={{ __html: post.content }} />
         </Col>

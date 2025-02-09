@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
-import { addPost, editPost } from "../../redux/postRedux";
+import { addPost, editPost, selectPostById } from "../../redux/postRedux";
+import { getAllCategories } from "../../redux/categoriesRedux";
 import { Form, Button } from "react-bootstrap";
-import { selectPostById } from "../../redux/postRedux";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import DatePicker from "react-datepicker";
@@ -13,7 +13,8 @@ import { useForm } from "react-hook-form";
 
 const PostForm = () => {
   const { id } = useParams();
-  const post = useSelector((state) => selectPostById(state, id));
+	const post = useSelector((state) => selectPostById(state, id));
+	const categories = useSelector(getAllCategories);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -32,7 +33,8 @@ const PostForm = () => {
       setValue("shortDescription", post.shortDescription);
       setValue("content", post.content);
       setValue("author", post.author);
-      setValue("publishedDate", new Date(post.publishedDate));
+			setValue("publishedDate", new Date(post.publishedDate));
+			setValue("category", post.category || ""); 
     }
   }, [post, setValue]);
 
@@ -48,7 +50,8 @@ const PostForm = () => {
       shortDescription: data.shortDescription,
       content: data.content,
       publishedDate: data.publishedDate ? formatDate(data.publishedDate) : null,
-      author: data.author
+			author: data.author,
+			category: data.category
     };
 
     if (id) {
@@ -103,6 +106,17 @@ const PostForm = () => {
 					dateFormat="dd-MM-yyyy"
 				/>
 				{dateError && <small className="d-block form-text text-danger mt-2">Published date is required</small>}
+      </Form.Group>
+			
+			<Form.Group className="mb-3">
+        <Form.Label htmlFor="category">Category</Form.Label>
+        <Form.Select id="category" {...register("category", { required: "Category is required" })}>
+					<option value="">Select category</option>
+					{categories?.map((category) => (
+						<option key={category} value={category}>{category}</option>
+					))}
+				</Form.Select>
+        {errors.category && <small className="d-block form-text text-danger mt-2">{errors.category.message}</small>}
       </Form.Group>
 
       <Form.Group className="mb-3">
